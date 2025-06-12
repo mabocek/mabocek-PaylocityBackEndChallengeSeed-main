@@ -4,6 +4,7 @@ using Api.Endpoints;
 using Api.Data;
 using Api.Repositories;
 using Api.Services;
+using Api.Models;
 using System.Reflection;
 using MediatR;
 using Microsoft.FeatureManagement;
@@ -16,6 +17,10 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add Feature Management
 builder.Services.AddFeatureManagement();
+
+// Configure PaycheckCalculationOptions
+builder.Services.Configure<PaycheckCalculationOptions>(
+    builder.Configuration.GetSection(PaycheckCalculationOptions.SectionName));
 
 // Add API Versioning
 builder.Services.AddApiVersioning(options =>

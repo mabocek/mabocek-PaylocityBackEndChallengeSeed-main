@@ -2,7 +2,9 @@ using Api.Dtos.Dependent;
 using Api.Dtos.Employee;
 using Api.Dtos.Paycheck;
 using Api.Features;
+using Api.Models;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Microsoft.FeatureManagement;
 
 namespace Api.Services;
@@ -15,23 +17,19 @@ public class PaycheckCalculationService : IPaycheckCalculationService
 {
     private readonly IFeatureManager _featureManager;
     private readonly ILogger<PaycheckCalculationService> _logger;
+    private readonly PaycheckCalculationOptions _options;
 
-    // Business rules constants
-    public const decimal BaseBenefitCostPerMonth = 1000m;
-    public const decimal DependentBenefitCostPerMonth = 600m;
-    public const decimal HighSalaryThreshold = 80000m;
-    public const decimal HighSalaryAdditionalCostPercentage = 0.02m;
-    public const decimal SeniorDependentThreshold = 50;
-    public const decimal SeniorDependentAdditionalCostPerMonth = 200m;
+    // Constant that doesn't need configuration
     public const int MonthsPerYear = 12;
-    public const int PaychecksPerYear = 26;
 
     public PaycheckCalculationService(
         IFeatureManager featureManager,
-        ILogger<PaycheckCalculationService> logger)
+        ILogger<PaycheckCalculationService> logger,
+        IOptions<PaycheckCalculationOptions> options)
     {
         _featureManager = featureManager ?? throw new ArgumentNullException(nameof(featureManager));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        _options = options?.Value ?? throw new ArgumentNullException(nameof(options));
     }
 
     /// <summary>
@@ -79,7 +77,7 @@ public class PaycheckCalculationService : IPaycheckCalculationService
         if (annualSalary < 0)
             throw new ArgumentException("Annual salary cannot be negative", nameof(annualSalary));
 
-        return annualSalary / PaychecksPerYear;
+        return annualSalary / _options.PaychecksPerYear;
     }
 
     /// <summary>
@@ -93,7 +91,7 @@ public class PaycheckCalculationService : IPaycheckCalculationService
             throw new ArgumentNullException(nameof(employee));
 
         // Calculate base benefit costs
-        var totalMonthlyCost = BaseBenefitCostPerMonth;
+        var totalMonthlyCost = _options.BaseBenefitCostPerMonth;
 
         // Calculate dependent costs and create breakdown
         var dependentBreakdowns = new List<DependentCostBreakdownDto>();
@@ -122,7 +120,7 @@ public class PaycheckCalculationService : IPaycheckCalculationService
         var perPaycheckDeduction = CalculatePerPaycheckDeduction(totalMonthlyCost);
 
         return new PaycheckDetailsDto(
-            BaseBenefitCostPerMonth,
+            _options.BaseBenefitCostPerMonth,
             totalDependentCost,
             highSalaryAdditionalCost,
             totalSeniorCost,
@@ -144,15 +142,15 @@ public class PaycheckCalculationService : IPaycheckCalculationService
         if (dependent == null)
             throw new ArgumentNullException(nameof(dependent));
 
-        var dependentCost = DependentBenefitCostPerMonth;
+        var dependentCost = _options.DependentBenefitCostPerMonth;
         var age = CalculateAge(dependent.DateOfBirth);
         var seniorAdditionalCost = 0m;
 
         // Apply senior dependent surcharge if feature is enabled
-        if (age >= SeniorDependentThreshold &&
+        if (age >= _options.SeniorDependentThreshold &&
             await _featureManager.IsEnabledAsync(FeatureFlags.EnableSeniorDependentSurcharge))
         {
-            seniorAdditionalCost = SeniorDependentAdditionalCostPerMonth;
+            seniorAdditionalCost = _options.SeniorDependentAdditionalCostPerMonth;
             dependentCost += seniorAdditionalCost;
         }
 
@@ -161,7 +159,7 @@ public class PaycheckCalculationService : IPaycheckCalculationService
             $"{dependent.FirstName} {dependent.LastName}",
             dependent.Relationship,
             (int)age,
-            DependentBenefitCostPerMonth,
+            _options.DependentBenefitCostPerMonth,
             seniorAdditionalCost,
             dependentCost
         );
@@ -174,13 +172,13 @@ public class PaycheckCalculationService : IPaycheckCalculationService
     /// <returns>Additional monthly cost for high salary employees</returns>
     public async Task<decimal> CalculateHighSalaryAdditionalCostAsync(decimal salary)
     {
-        if (salary <= HighSalaryThreshold)
+        if (salary <= _options.HighSalaryThreshold)
             return 0m;
 
         if (!await _featureManager.IsEnabledAsync(FeatureFlags.EnableHighSalaryCalculation))
             return 0m;
 
-        return salary * HighSalaryAdditionalCostPercentage / MonthsPerYear;
+        return salary * _options.HighSalaryAdditionalCostPercentage / MonthsPerYear;
     }
 
     /// <summary>
@@ -194,7 +192,7 @@ public class PaycheckCalculationService : IPaycheckCalculationService
             throw new ArgumentException("Monthly cost cannot be negative", nameof(totalMonthlyCost));
 
         var totalYearlyCost = totalMonthlyCost * MonthsPerYear;
-        return totalYearlyCost / PaychecksPerYear;
+        return totalYearlyCost / _options.PaychecksPerYear;
     }
 
     /// <summary>

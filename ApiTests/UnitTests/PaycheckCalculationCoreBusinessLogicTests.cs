@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Xunit;
 using Moq;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Api.Services;
 using Api.Dtos.Employee;
 using Api.Dtos.Dependent;
@@ -32,7 +33,12 @@ public class PaycheckCalculationCoreBusinessLogicTests
         _mockFeatureManager.Setup(x => x.IsEnabledAsync(It.IsAny<string>()))
             .ReturnsAsync(true);
 
-        _service = new PaycheckCalculationService(_mockFeatureManager.Object, _mockLogger.Object);
+        // Create configuration options with default values
+        var options = new PaycheckCalculationOptions();
+        var mockOptions = new Mock<IOptions<PaycheckCalculationOptions>>();
+        mockOptions.Setup(x => x.Value).Returns(options);
+
+        _service = new PaycheckCalculationService(_mockFeatureManager.Object, _mockLogger.Object, mockOptions.Object);
     }
 
     #region Core Business Requirements Tests

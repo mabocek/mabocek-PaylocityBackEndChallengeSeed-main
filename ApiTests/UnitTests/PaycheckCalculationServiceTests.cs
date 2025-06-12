@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Xunit;
 using Moq;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Api.Services;
 using Api.Dtos.Employee;
 using Api.Dtos.Dependent;
@@ -52,7 +53,13 @@ public class PaycheckCalculationServiceTests
     private static PaycheckCalculationService CreateServiceWithFeaturesEnabled()
     {
         var mockLogger = new Mock<ILogger<PaycheckCalculationService>>();
-        return new PaycheckCalculationService(CreateMockFeatureManagerAllEnabled().Object, mockLogger.Object);
+
+        // Create configuration options with default values
+        var options = new PaycheckCalculationOptions();
+        var mockOptions = new Mock<IOptions<PaycheckCalculationOptions>>();
+        mockOptions.Setup(x => x.Value).Returns(options);
+
+        return new PaycheckCalculationService(CreateMockFeatureManagerAllEnabled().Object, mockLogger.Object, mockOptions.Object);
     }
 
     /// <summary>
@@ -61,7 +68,13 @@ public class PaycheckCalculationServiceTests
     private static PaycheckCalculationService CreateServiceWithFeaturesDisabled()
     {
         var mockLogger = new Mock<ILogger<PaycheckCalculationService>>();
-        return new PaycheckCalculationService(CreateMockFeatureManagerAllDisabled().Object, mockLogger.Object);
+
+        // Create configuration options with default values
+        var options = new PaycheckCalculationOptions();
+        var mockOptions = new Mock<IOptions<PaycheckCalculationOptions>>();
+        mockOptions.Setup(x => x.Value).Returns(options);
+
+        return new PaycheckCalculationService(CreateMockFeatureManagerAllDisabled().Object, mockLogger.Object, mockOptions.Object);
     }
 
     /// <summary>
