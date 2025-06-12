@@ -27,7 +27,7 @@ d. Provide us with a link to your code repository
 - ✅ Dependent endpoints: `GET /api/v1/dependents` and `GET /api/v1/dependents/{id}`
 
 ####  An employee may only have **1 spouse or domestic partner** (not both)  ####
-- ✅ Enforced through database relationship and also ValidateSpouseAndDomesticPartnerConstraint method in CreateEmployeeWithDependentsCommandHandler.
+- ✅ Enforced ValidateSpouseAndDomesticPartnerConstraint method in CreateEmployeeWithDependentsCommandHandler. Can be also enforced through filtered index in database, but it's not compatible with In-Memory databae, which I used in this project.
 ####  This does not need to be implemented explicitly, but can serve to limit your test cases ####
 
 
