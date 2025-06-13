@@ -23,12 +23,12 @@ namespace ApiTests.UnitTests;
 /// Unit tests for EmployeeEndpointsV1 minimal API endpoints
 /// Tests all endpoint methods with various scenarios including success, failure, and edge cases
 /// </summary>
-public class EmployeeEndpointsV1Tests
+public class EmployeeEndpointsV1Tests_Working
 {
     private readonly Mock<IEmployeeService> _mockEmployeeService;
     private readonly Mock<IFeatureManager> _mockFeatureManager;
 
-    public EmployeeEndpointsV1Tests()
+    public EmployeeEndpointsV1Tests_Working()
     {
         _mockEmployeeService = new Mock<IEmployeeService>();
         _mockFeatureManager = new Mock<IFeatureManager>();

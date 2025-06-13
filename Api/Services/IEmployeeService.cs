@@ -6,8 +6,6 @@ namespace Api.Services;
 
 public interface IEmployeeService
 {
-    Task<List<GetEmployeeDto>> GetAllAsync();
-
     Task<PagedResult<GetEmployeeDto>> GetPagedAsync(
         int page,
         int pageSize,
@@ -19,4 +17,19 @@ public interface IEmployeeService
     Task<GetEmployeeDto> CreateAsync(string firstName, string lastName, decimal salary, DateOnly dateOfBirth);
     Task<GetEmployeeDto?> UpdateAsync(int id, string firstName, string lastName, decimal salary, DateOnly dateOfBirth);
     Task<bool> DeleteAsync(int id);
+    Task<ApiResponse<GetEmployeeDto>> GetEmployeeByIdAsync(int id);
+
+    Task<ApiResponse<PagedResult<GetEmployeeDto>>> GetEmployeesPagedAsync(
+        int page = 1,
+        int pageSize = 10,
+        string? sortBy = null,
+        string? sortOrder = null);
+
+    Task<ApiResponse<GetPaycheckDto>> GetEmployeePaycheckAsync(int id);
+
+    Task<ApiResponse<GetEmployeeDto>> CreateEmployeeAsync(string firstName, string lastName, decimal salary, DateOnly dateOfBirth);
+
+    Task<ApiResponse<GetEmployeeDto>> UpdateEmployeeAsync(int id, string firstName, string lastName, decimal salary, DateOnly dateOfBirth);
+
+    Task<ApiResponse<object>> DeleteEmployeeAsync(int id);
 }

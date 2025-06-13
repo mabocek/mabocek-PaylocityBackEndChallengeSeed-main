@@ -261,11 +261,41 @@ This modular architecture supports better maintainability, testing, and future s
 **⚠️ ApiResponse<T>**  
 Project is using Generic class for responses. I'm not exactly sure, why it's there and what it really solves, which cannot be done using standard responses, but I kept it. If there is no legimite reason of keeping it, I would remove it.
 
-####  Address "task" code comments ####
-####  easy to run your code (if non-standard, provide directions) ####
-✅ I tried to make code as standard as possible, no additional commands are needed.
+###  Address "task" code comments ####
+#### EmployeesController.cs
+**//task: use a more realistic production approach**
+✅ As mentioned, I used a more realistic production approach for `API Controllers` with:
+- `Entity framework` - currently just In-Memory database for easy setup. CQRS and Repository patterns presents clear layer a and resposibility separation/decoupling. Migration to SQL Database is required or production deployment.
+- Since there are no complex filters, `Minimal API` was chosen as cleaner and faster solution.
+- Business logic was separated into `Service layer`.
+- authentication/authorization, input sanitization, logging would make perfect sense for implementation, but it was part of requirements to not waste time on it.
 
 ---
+
+#### IntegrationTest.cs
+**//task: update your port if necessary**
+- ✅ Port change wasn't necessary, but it was moved to configuration to avoid future problems with other applications running on same port.
+
+---
+
+#### DependentIntegrationTests.cs
+**//task: make test pass**
+- test `WhenAskedForAllDependents_ShouldReturnAllDependents()` is passing now
+- test `WhenAskedForADependent_ShouldReturnCorrectDependent()` is passing now
+- test `WhenAskedForANonexistentDependent_ShouldReturn404()` is passing now
+
+---
+
+## EmployeeIntegrationTests
+**//task: make test pass**
+- test `WhenAskedForAnEmployee_ShouldReturnCorrectEmployee()` is passing now
+- test `WhenAskedForANonexistentEmployee_ShouldReturn404()` is passing now
+
+
+---
+
+####  easy to run your code (if non-standard, provide directions) ####
+✅ I tried to make code as standard as possible, no additional commands are needed.
 
 ### What should you not waste time on?
 

@@ -5,6 +5,7 @@ using Api.Features.Employees.Queries;
 using Api.Features.Employees.Commands;
 using MediatR;
 using Microsoft.Extensions.Logging;
+using Microsoft.FeatureManagement;
 using Moq;
 using Xunit;
 using System;
@@ -22,6 +23,7 @@ public class EmployeeServiceTests
 {
     private readonly Mock<IMediator> _mockMediator;
     private readonly Mock<ILogger<EmployeeService>> _mockLogger;
+    private readonly Mock<IFeatureManager> _mockFeatureManager;
     private readonly Mock<IPaycheckCalculationService> _mockPaycheckService;
     private readonly EmployeeService _service;
 
@@ -29,9 +31,10 @@ public class EmployeeServiceTests
     {
         _mockMediator = new Mock<IMediator>();
         _mockLogger = new Mock<ILogger<EmployeeService>>();
+        _mockFeatureManager = new Mock<IFeatureManager>();
         _mockPaycheckService = new Mock<IPaycheckCalculationService>();
 
-        _service = new EmployeeService(_mockMediator.Object, _mockLogger.Object, _mockPaycheckService.Object);
+        _service = new EmployeeService(_mockMediator.Object, _mockFeatureManager.Object, _mockLogger.Object, _mockPaycheckService.Object);
     }
 
     #region Constructor Tests
@@ -40,20 +43,15 @@ public class EmployeeServiceTests
     /// Tests constructor validation for null dependencies
     /// </summary>
     [Theory]
-    [InlineData("logger")] // Logger is null
     [InlineData("paycheckService")] // PaycheckService is null
     public void Constructor_ThrowsArgumentNullException_WhenDependencyIsNull(string nullDependency)
     {
         // Act & Assert
         switch (nullDependency)
         {
-            case "logger":
-                Assert.Throws<ArgumentNullException>(() =>
-                    new EmployeeService(_mockMediator.Object, null!, _mockPaycheckService.Object));
-                break;
             case "paycheckService":
                 Assert.Throws<ArgumentNullException>(() =>
-                    new EmployeeService(_mockMediator.Object, _mockLogger.Object, null!));
+                    new EmployeeService(_mockMediator.Object, _mockFeatureManager.Object, _mockLogger.Object, null!));
                 break;
         }
     }

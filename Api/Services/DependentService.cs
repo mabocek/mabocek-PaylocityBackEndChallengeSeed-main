@@ -1,11 +1,13 @@
 using Api.Dtos.Dependent;
 using Api.Models;
 using Api.Features.Dependents.Queries;
+using Api.Features;
 using MediatR;
+using Microsoft.FeatureManagement;
 
 namespace Api.Services;
 
-public class DependentService : IDependentService
+public class DependentService : BaseService, IDependentService
 {
     private const string SortByFirstName = "firstname";
     private const string SortByLastName = "lastname";
@@ -15,62 +17,10 @@ public class DependentService : IDependentService
 
     private readonly IMediator _mediator;
 
-    public DependentService(IMediator mediator)
+    public DependentService(IMediator mediator, IFeatureManager featureManager, ILogger<DependentService> logger)
+        : base(featureManager, logger)
     {
         _mediator = mediator;
-    }
-
-    public async Task<List<GetDependentDto>> GetAllAsync(
-        int? employeeId = null,
-        Relationship? relationship = null,
-        string? sortBy = null,
-        bool ascending = true)
-    {
-        var dependents = await _mediator.Send(new GetAllDependentsQuery());
-
-        // Apply filtering and sorting (this logic matches what was in the endpoint)
-        var filteredDependents = dependents.AsEnumerable();
-
-        if (employeeId.HasValue)
-        {
-            filteredDependents = filteredDependents.Where(d => d.EmployeeId == employeeId.Value);
-        }
-
-        if (relationship.HasValue)
-        {
-            filteredDependents = filteredDependents.Where(d => d.Relationship == relationship.Value);
-        }
-
-        // Apply sorting
-        if (!string.IsNullOrEmpty(sortBy))
-        {
-            filteredDependents = sortBy.ToLower() switch
-            {
-                SortByFirstName => ascending
-                    ? filteredDependents.OrderBy(d => d.FirstName)
-                    : filteredDependents.OrderByDescending(d => d.FirstName),
-                SortByLastName => ascending
-                    ? filteredDependents.OrderBy(d => d.LastName)
-                    : filteredDependents.OrderByDescending(d => d.LastName),
-                SortByDateOfBirth => ascending
-                    ? filteredDependents.OrderBy(d => d.DateOfBirth)
-                    : filteredDependents.OrderByDescending(d => d.DateOfBirth),
-                SortByRelationship => ascending
-                    ? filteredDependents.OrderBy(d => d.Relationship)
-                    : filteredDependents.OrderByDescending(d => d.Relationship),
-                SortByEmployeeId => ascending
-                    ? filteredDependents.OrderBy(d => d.EmployeeId)
-                    : filteredDependents.OrderByDescending(d => d.EmployeeId),
-                _ => filteredDependents.OrderBy(d => d.Id) // Default sort by Id
-            };
-        }
-        else
-        {
-            // Default sorting by Id if no sortBy parameter is provided
-            filteredDependents = filteredDependents.OrderBy(d => d.Id);
-        }
-
-        return filteredDependents.ToList();
     }
 
     public async Task<PagedResult<GetDependentDto>> GetPagedAsync(
@@ -93,5 +43,48 @@ public class DependentService : IDependentService
     public async Task<GetDependentDto?> GetByIdAsync(int id)
     {
         return await _mediator.Send(new GetDependentByIdQuery(id));
+    }
+
+    public async Task<ApiResponse<GetDependentDto>> GetDependentByIdAsync(int id)
+    {
+        // Check feature flag
+        if (!await _featureManager.IsEnabledAsync(FeatureFlags.EnableDependentOperations))
+        {
+            return Failure<GetDependentDto>("Dependent operations feature is currently disabled");
+        }
+
+        return await ExecuteAsync(async () =>
+        {
+            var dependent = await GetByIdAsync(id);
+            if (dependent == null)
+            {
+                throw new ArgumentException($"Dependent with id {id} not found");
+            }
+            return dependent;
+        }, "retrieving dependent");
+    }
+
+    public async Task<ApiResponse<PagedResult<GetDependentDto>>> GetDependentsPagedAsync(
+        int page = 1,
+        int pageSize = 10,
+        int? employeeId = null,
+        string? relationship = null,
+        string? sortBy = null,
+        string? sortOrder = null)
+    {
+        // Check feature flag
+        if (!await _featureManager.IsEnabledAsync(FeatureFlags.EnableDependentOperations))
+        {
+            return Failure<PagedResult<GetDependentDto>>("Dependent operations feature is currently disabled");
+        }
+
+        return await ExecuteAsync(async () =>
+        {
+            // Convert parameters
+            var relationshipEnum = ParseEnum<Relationship>(relationship);
+            var ascending = ParseSortOrder(sortOrder);
+
+            return await GetPagedAsync(page, pageSize, employeeId, relationshipEnum, sortBy, ascending);
+        }, "retrieving dependents");
     }
 }

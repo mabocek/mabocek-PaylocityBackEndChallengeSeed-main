@@ -9,6 +9,12 @@ namespace Api.Repositories;
 /// </summary>
 public class DependentRepository : Repository<Dependent>, IDependentRepository
 {
+    private const string Firstname = "firstname";
+    private const string Lastname = "lastname";
+    private const string Dateofbirth = "dateofbirth";
+    private const string Relationship = "relationship";
+    private const string Employeeid = "employeeid";
+
     public DependentRepository(ApplicationDbContext context, ILogger<DependentRepository> logger)
         : base(context, logger)
     {
@@ -106,11 +112,11 @@ public class DependentRepository : Repository<Dependent>, IDependentRepository
 
         return sortBy.ToLower() switch
         {
-            "firstname" => ascending ? query.OrderBy(d => d.FirstName) : query.OrderByDescending(d => d.FirstName),
-            "lastname" => ascending ? query.OrderBy(d => d.LastName) : query.OrderByDescending(d => d.LastName),
-            "dateofbirth" => ascending ? query.OrderBy(d => d.DateOfBirth) : query.OrderByDescending(d => d.DateOfBirth),
-            "relationship" => ascending ? query.OrderBy(d => d.Relationship) : query.OrderByDescending(d => d.Relationship),
-            "employeeid" => ascending ? query.OrderBy(d => d.EmployeeId) : query.OrderByDescending(d => d.EmployeeId),
+            Firstname => ascending ? query.OrderBy(d => d.FirstName) : query.OrderByDescending(d => d.FirstName),
+            Lastname => ascending ? query.OrderBy(d => d.LastName) : query.OrderByDescending(d => d.LastName),
+            Dateofbirth => ascending ? query.OrderBy(d => d.DateOfBirth) : query.OrderByDescending(d => d.DateOfBirth),
+            Relationship => ascending ? query.OrderBy(d => d.Relationship) : query.OrderByDescending(d => d.Relationship),
+            Employeeid => ascending ? query.OrderBy(d => d.EmployeeId) : query.OrderByDescending(d => d.EmployeeId),
             _ => ascending ? query.OrderBy(d => d.Id) : query.OrderByDescending(d => d.Id)
         };
     }

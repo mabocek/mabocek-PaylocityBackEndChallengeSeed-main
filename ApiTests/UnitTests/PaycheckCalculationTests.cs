@@ -146,18 +146,18 @@ public class PaycheckCalculationTests
         string dependentsData)
     {
         // Arrange
-        var employee = CreateTestEmployeeFromData(
-            employeeId, firstName, lastName, salary,
-            DateOnly.Parse(dateOfBirthString), dependentsData);
+        var employee = CreateTestEmployeeFromData(employeeId, firstName, lastName, salary,
+        DateOnly.Parse(dateOfBirthString), dependentsData);
         var employeeDto = MapToEmployeeDto(employee);
         var mockLogger = new Mock<ILogger<EmployeeService>>();
         var mockMediator = new Mock<IMediator>();
+        var mockFeatureManager = new Mock<IFeatureManager>();
         var paycheckCalculationService = CreatePaycheckCalculationService();
 
         mockMediator.Setup(m => m.Send(It.Is<GetEmployeePaycheckQuery>(q => q.EmployeeId == employeeId), It.IsAny<CancellationToken>()))
                    .ReturnsAsync(employeeDto);
 
-        var service = new EmployeeService(mockMediator.Object, mockLogger.Object, paycheckCalculationService);
+        var service = new EmployeeService(mockMediator.Object, mockFeatureManager.Object, mockLogger.Object, paycheckCalculationService);
 
         // Act
         var result = await service.GetPaycheckAsync(employeeId);
@@ -195,12 +195,13 @@ public class PaycheckCalculationTests
         // Arrange
         var mockLogger = new Mock<ILogger<EmployeeService>>();
         var mockMediator = new Mock<IMediator>();
+        var mockFeatureManager = new Mock<IFeatureManager>();
         var paycheckCalculationService = CreatePaycheckCalculationService();
 
         mockMediator.Setup(m => m.Send(It.Is<GetEmployeePaycheckQuery>(q => q.EmployeeId == nonExistentEmployeeId), It.IsAny<CancellationToken>()))
                    .ReturnsAsync((GetEmployeeDto?)null);
 
-        var service = new EmployeeService(mockMediator.Object, mockLogger.Object, paycheckCalculationService);
+        var service = new EmployeeService(mockMediator.Object, mockFeatureManager.Object, mockLogger.Object, paycheckCalculationService);
 
         // Act
         var result = await service.GetPaycheckAsync(nonExistentEmployeeId);

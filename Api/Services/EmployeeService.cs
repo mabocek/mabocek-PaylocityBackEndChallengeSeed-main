@@ -11,21 +11,23 @@ using Microsoft.FeatureManagement;
 
 namespace Api.Services;
 
-public class EmployeeService : IEmployeeService
+public class EmployeeService : BaseService, IEmployeeService
 {
     private readonly IMediator _mediator;
-    private readonly ILogger<EmployeeService> _logger;
     private readonly IPaycheckCalculationService _paycheckCalculationService;
 
     public EmployeeService(
         IMediator mediator,
+        IFeatureManager featureManager,
         ILogger<EmployeeService> logger,
         IPaycheckCalculationService paycheckCalculationService)
+        : base(featureManager, logger)
     {
         _mediator = mediator;
-        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         _paycheckCalculationService = paycheckCalculationService ?? throw new ArgumentNullException(nameof(paycheckCalculationService));
     }
+
+    #region Legacy Methods (for backwards compatibility)
 
     public async Task<List<GetEmployeeDto>> GetAllAsync()
     {
@@ -92,4 +94,89 @@ public class EmployeeService : IEmployeeService
     {
         return await _mediator.Send(new DeleteEmployeeCommand(id));
     }
+
+    #endregion
+
+    #region New Endpoint-Friendly Methods
+
+    public async Task<ApiResponse<GetEmployeeDto>> GetEmployeeByIdAsync(int id)
+    {
+        return await ExecuteAsync(async () =>
+        {
+            var employee = await GetByIdAsync(id);
+            if (employee == null)
+            {
+                throw new ArgumentException($"Employee with id {id} not found");
+            }
+            return employee;
+        }, "retrieving employee");
+    }
+
+    public async Task<ApiResponse<PagedResult<GetEmployeeDto>>> GetEmployeesPagedAsync(
+        int page = 1,
+        int pageSize = 10,
+        string? sortBy = null,
+        string? sortOrder = null)
+    {
+        return await ExecuteAsync(async () =>
+        {
+            var ascending = ParseSortOrder(sortOrder);
+            return await GetPagedAsync(page, pageSize, sortBy, ascending);
+        }, "retrieving employees");
+    }
+
+    public async Task<ApiResponse<GetPaycheckDto>> GetEmployeePaycheckAsync(int id)
+    {
+        // Check feature flag
+        if (!await _featureManager.IsEnabledAsync(FeatureFlags.EnablePaycheckCalculation))
+        {
+            return Failure<GetPaycheckDto>("Paycheck calculation feature is currently disabled");
+        }
+
+        return await ExecuteAsync(async () =>
+        {
+            var paycheck = await GetPaycheckAsync(id);
+            if (paycheck == null)
+            {
+                throw new ArgumentException($"Employee with id {id} not found");
+            }
+            return paycheck;
+        }, "calculating paycheck");
+    }
+
+    public async Task<ApiResponse<GetEmployeeDto>> CreateEmployeeAsync(string firstName, string lastName, decimal salary, DateOnly dateOfBirth)
+    {
+        return await ExecuteAsync(async () =>
+        {
+            return await CreateAsync(firstName, lastName, salary, dateOfBirth);
+        }, "creating employee", "Employee created successfully");
+    }
+
+    public async Task<ApiResponse<GetEmployeeDto>> UpdateEmployeeAsync(int id, string firstName, string lastName, decimal salary, DateOnly dateOfBirth)
+    {
+        return await ExecuteAsync(async () =>
+        {
+            var employee = await UpdateAsync(id, firstName, lastName, salary, dateOfBirth);
+            if (employee == null)
+            {
+                throw new ArgumentException($"Employee with id {id} not found");
+            }
+            return employee;
+        }, "updating employee", "Employee updated successfully");
+    }
+
+    public async Task<ApiResponse<object>> DeleteEmployeeAsync(int id)
+    {
+        return await ExecuteAsync(async () =>
+        {
+            var success = await DeleteAsync(id);
+            if (!success)
+            {
+                throw new ArgumentException($"Employee with id {id} not found");
+            }
+            return new object();
+        }, "deleting employee", "Employee deleted successfully");
+    }
+
+    #endregion
 }
