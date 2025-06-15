@@ -1,7 +1,6 @@
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
-using Api.Models;
 using Newtonsoft.Json;
 using Xunit;
 
@@ -20,10 +19,9 @@ internal static class ShouldExtensions
     {
         await response.ShouldReturn(expectedStatusCode);
         Assert.Equal(ShouldExtensions.defaultApplicationJson, response.Content.Headers.ContentType?.MediaType);
-        var apiResponse = JsonConvert.DeserializeObject<ApiResponse<T>>(await response.Content.ReadAsStringAsync());
-        Assert.NotNull(apiResponse);
-        Assert.True(apiResponse.Success);
-        Assert.Equal(JsonConvert.SerializeObject(expectedContent), JsonConvert.SerializeObject(apiResponse.Data));
+        var result = JsonConvert.DeserializeObject<T>(await response.Content.ReadAsStringAsync());
+        Assert.NotNull(result);
+        Assert.Equal(JsonConvert.SerializeObject(expectedContent), JsonConvert.SerializeObject(result));
     }
 }
 

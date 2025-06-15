@@ -37,15 +37,13 @@ public class PaginationIntegrationTests : IntegrationTestBase
         // Assert
         response.EnsureSuccessStatusCode();
         var content = await response.Content.ReadAsStringAsync();
-        var apiResponse = JsonSerializer.Deserialize<ApiResponse<PagedResult<GetEmployeeDto>>>(content, _jsonOptions);
+        var pagedResult = JsonSerializer.Deserialize<PagedResult<GetEmployeeDto>>(content, _jsonOptions);
 
-        Assert.NotNull(apiResponse);
-        Assert.True(apiResponse.Success);
-        Assert.NotNull(apiResponse.Data);
-        Assert.Equal(1, apiResponse.Data.CurrentPage);
-        Assert.Equal(2, apiResponse.Data.PageSize);
-        Assert.True(apiResponse.Data.Items.Count <= 2); // Should return at most 2 items
-        Assert.True(apiResponse.Data.TotalItems >= 0); // Should have some total count
+        Assert.NotNull(pagedResult);
+        Assert.Equal(1, pagedResult.CurrentPage);
+        Assert.Equal(2, pagedResult.PageSize);
+        Assert.True(pagedResult.Items.Count <= 2); // Should return at most 2 items
+        Assert.True(pagedResult.TotalItems >= 0); // Should have some total count
     }
 
     [Fact]
@@ -59,19 +57,17 @@ public class PaginationIntegrationTests : IntegrationTestBase
         // Assert
         response.EnsureSuccessStatusCode();
         var content = await response.Content.ReadAsStringAsync();
-        var apiResponse = JsonSerializer.Deserialize<ApiResponse<PagedResult<GetEmployeeDto>>>(content, _jsonOptions);
+        var pagedResult = JsonSerializer.Deserialize<PagedResult<GetEmployeeDto>>(content, _jsonOptions);
 
-        Assert.NotNull(apiResponse);
-        Assert.True(apiResponse.Success);
-        Assert.NotNull(apiResponse.Data);
+        Assert.NotNull(pagedResult);
 
         // Verify sorting if we have multiple items
-        if (apiResponse.Data.Items.Count > 1)
+        if (pagedResult.Items.Count > 1)
         {
-            for (int i = 0; i < apiResponse.Data.Items.Count - 1; i++)
+            for (int i = 0; i < pagedResult.Items.Count - 1; i++)
             {
-                var current = apiResponse.Data.Items[i].FirstName;
-                var next = apiResponse.Data.Items[i + 1].FirstName;
+                var current = pagedResult.Items[i].FirstName;
+                var next = pagedResult.Items[i + 1].FirstName;
                 Assert.True(string.Compare(current, next, StringComparison.OrdinalIgnoreCase) <= 0);
             }
         }
@@ -88,15 +84,13 @@ public class PaginationIntegrationTests : IntegrationTestBase
         // Assert
         response.EnsureSuccessStatusCode();
         var content = await response.Content.ReadAsStringAsync();
-        var apiResponse = JsonSerializer.Deserialize<ApiResponse<PagedResult<GetDependentDto>>>(content, _jsonOptions);
+        var pagedResult = JsonSerializer.Deserialize<PagedResult<GetDependentDto>>(content, _jsonOptions);
 
-        Assert.NotNull(apiResponse);
-        Assert.True(apiResponse.Success);
-        Assert.NotNull(apiResponse.Data);
-        Assert.Equal(1, apiResponse.Data.CurrentPage);
-        Assert.Equal(3, apiResponse.Data.PageSize);
-        Assert.True(apiResponse.Data.Items.Count <= 3); // Should return at most 3 items
-        Assert.True(apiResponse.Data.TotalItems >= 0); // Should have some total count
+        Assert.NotNull(pagedResult);
+        Assert.Equal(1, pagedResult.CurrentPage);
+        Assert.Equal(3, pagedResult.PageSize);
+        Assert.True(pagedResult.Items.Count <= 3); // Should return at most 3 items
+        Assert.True(pagedResult.TotalItems >= 0); // Should have some total count
     }
 
     [Fact]
@@ -110,14 +104,12 @@ public class PaginationIntegrationTests : IntegrationTestBase
         // Assert
         response.EnsureSuccessStatusCode();
         var content = await response.Content.ReadAsStringAsync();
-        var apiResponse = JsonSerializer.Deserialize<ApiResponse<PagedResult<GetDependentDto>>>(content, _jsonOptions);
+        var pagedResult = JsonSerializer.Deserialize<PagedResult<GetDependentDto>>(content, _jsonOptions);
 
-        Assert.NotNull(apiResponse);
-        Assert.True(apiResponse.Success);
-        Assert.NotNull(apiResponse.Data);
+        Assert.NotNull(pagedResult);
 
         // Verify filtering - all returned dependents should be children (if any)
-        foreach (var dependent in apiResponse.Data.Items)
+        foreach (var dependent in pagedResult.Items)
         {
             Assert.Equal(Relationship.Child, dependent.Relationship);
         }
@@ -151,12 +143,10 @@ public class PaginationIntegrationTests : IntegrationTestBase
         // Assert
         response.EnsureSuccessStatusCode();
         var content = await response.Content.ReadAsStringAsync();
-        var apiResponse = JsonSerializer.Deserialize<ApiResponse<PagedResult<GetEmployeeDto>>>(content, _jsonOptions);
+        var pagedResult = JsonSerializer.Deserialize<PagedResult<GetEmployeeDto>>(content, _jsonOptions);
 
-        Assert.NotNull(apiResponse);
-        Assert.True(apiResponse.Success);
-        Assert.NotNull(apiResponse.Data);
-        Assert.Equal(1, apiResponse.Data.CurrentPage); // Default page should be 1
-        Assert.Equal(10, apiResponse.Data.PageSize); // Default page size should be 10
+        Assert.NotNull(pagedResult);
+        Assert.Equal(1, pagedResult.CurrentPage); // Default page should be 1
+        Assert.Equal(10, pagedResult.PageSize); // Default page size should be 10
     }
 }

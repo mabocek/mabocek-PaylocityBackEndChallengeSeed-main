@@ -99,83 +99,108 @@ public class EmployeeService : BaseService, IEmployeeService
 
     #region New Endpoint-Friendly Methods
 
-    public async Task<ApiResponse<GetEmployeeDto>> GetEmployeeByIdAsync(int id)
+    public async Task<GetEmployeeDto?> GetEmployeeByIdAsync(int id)
     {
-        return await ExecuteAsync(async () =>
+        try
         {
             var employee = await GetByIdAsync(id);
-            if (employee == null)
-            {
-                throw new ArgumentException($"Employee with id {id} not found");
-            }
             return employee;
-        }, "retrieving employee");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error retrieving employee {Id}", id);
+            return null;
+        }
     }
 
-    public async Task<ApiResponse<PagedResult<GetEmployeeDto>>> GetEmployeesPagedAsync(
+    public async Task<PagedResult<GetEmployeeDto>> GetEmployeesPagedAsync(
         int page = 1,
         int pageSize = 10,
         string? sortBy = null,
         string? sortOrder = null)
     {
-        return await ExecuteAsync(async () =>
+        try
         {
             var ascending = ParseSortOrder(sortOrder);
             return await GetPagedAsync(page, pageSize, sortBy, ascending);
-        }, "retrieving employees");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error retrieving paged employees");
+            throw;
+        }
     }
 
-    public async Task<ApiResponse<GetPaycheckDto>> GetEmployeePaycheckAsync(int id)
+    public async Task<GetPaycheckDto?> GetEmployeePaycheckAsync(int id)
     {
         // Check feature flag
         if (!await _featureManager.IsEnabledAsync(FeatureFlags.EnablePaycheckCalculation))
         {
-            return Failure<GetPaycheckDto>("Paycheck calculation feature is currently disabled");
+            throw new InvalidOperationException("Paycheck calculation feature is currently disabled");
         }
 
-        return await ExecuteAsync(async () =>
+        try
         {
             var paycheck = await GetPaycheckAsync(id);
-            if (paycheck == null)
-            {
-                throw new ArgumentException($"Employee with id {id} not found");
-            }
             return paycheck;
-        }, "calculating paycheck");
-    }
-
-    public async Task<ApiResponse<GetEmployeeDto>> CreateEmployeeAsync(string firstName, string lastName, decimal salary, DateOnly dateOfBirth)
-    {
-        return await ExecuteAsync(async () =>
+        }
+        catch (Exception ex)
         {
-            return await CreateAsync(firstName, lastName, salary, dateOfBirth);
-        }, "creating employee", "Employee created successfully");
+            _logger.LogError(ex, "Error calculating paycheck for employee {Id}", id);
+            return null;
+        }
     }
 
-    public async Task<ApiResponse<GetEmployeeDto>> UpdateEmployeeAsync(int id, string firstName, string lastName, decimal salary, DateOnly dateOfBirth)
+    public async Task<GetEmployeeDto> CreateEmployeeAsync(string firstName, string lastName, decimal salary, DateOnly dateOfBirth)
     {
-        return await ExecuteAsync(async () =>
+        try
+        {
+            var employee = await CreateAsync(firstName, lastName, salary, dateOfBirth);
+            _logger.LogInformation("Employee created successfully with id {Id}", employee.Id);
+            return employee;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error creating employee");
+            throw;
+        }
+    }
+
+    public async Task<GetEmployeeDto> UpdateEmployeeAsync(int id, string firstName, string lastName, decimal salary, DateOnly dateOfBirth)
+    {
+        try
         {
             var employee = await UpdateAsync(id, firstName, lastName, salary, dateOfBirth);
             if (employee == null)
             {
                 throw new ArgumentException($"Employee with id {id} not found");
             }
+            _logger.LogInformation("Employee {Id} updated successfully", id);
             return employee;
-        }, "updating employee", "Employee updated successfully");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error updating employee {Id}", id);
+            throw;
+        }
     }
 
-    public async Task<ApiResponse<object>> DeleteEmployeeAsync(int id)
+    public async Task DeleteEmployeeAsync(int id)
     {
-        return await ExecuteAsync(async () =>
+        try
         {
             var success = await DeleteAsync(id);
             if (!success)
             {
                 throw new ArgumentException($"Employee with id {id} not found");
             }
-            return new object();
-        }, "deleting employee", "Employee deleted successfully");
+            _logger.LogInformation("Employee {Id} deleted successfully", id);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error deleting employee {Id}", id);
+            throw;
+        }
     }
 
     #endregion

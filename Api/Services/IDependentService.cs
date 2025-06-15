@@ -15,9 +15,9 @@ public interface IDependentService
 
     Task<GetDependentDto?> GetByIdAsync(int id);
 
-    Task<ApiResponse<GetDependentDto>> GetDependentByIdAsync(int id);
+    Task<GetDependentDto?> GetDependentByIdAsync(int id);
 
-    Task<ApiResponse<PagedResult<GetDependentDto>>> GetDependentsPagedAsync(
+    Task<PagedResult<GetDependentDto>> GetDependentsPagedAsync(
         int page = 1,
         int pageSize = 10,
         int? employeeId = null,

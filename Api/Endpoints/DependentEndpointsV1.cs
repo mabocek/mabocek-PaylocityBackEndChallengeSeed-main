@@ -23,9 +23,9 @@ public static class DependentEndpointsV1
                 await GetDependentById(id, dependentService))
             .WithName("GetDependent")
             .WithSummary("Get dependent by id")
-            .Produces<ApiResponse<GetDependentDto>>(200)
-            .Produces<ApiResponse<GetDependentDto>>(404)
-            .Produces<ApiResponse<GetDependentDto>>(400);
+            .Produces<GetDependentDto>(200)
+            .Produces(404)
+            .Produces(400);
 
         dependentGroup.MapGet("",
             async (IDependentService dependentService,
@@ -35,25 +35,27 @@ public static class DependentEndpointsV1
             .WithName("GetAllDependents")
             .WithSummary("Get dependents with pagination, filtering and sorting")
             .WithDescription("Get dependents with pagination support (default page=1, pageSize=10). Supports filtering by employeeId and relationship, and sorting by firstName, lastName, dateOfBirth, relationship, employeeId.")
-            .Produces<ApiResponse<PagedResult<GetDependentDto>>>(200)
-            .Produces<ApiResponse<PagedResult<GetDependentDto>>>(400);
+            .Produces<PagedResult<GetDependentDto>>(200)
+            .Produces(400);
     }
 
     private static async Task<IResult> GetDependentById(int id, IDependentService dependentService)
     {
-        var result = await dependentService.GetDependentByIdAsync(id);
-
-        if (!result.Success && result.Message?.Contains("not found") == true)
+        try
         {
-            return Results.NotFound(result);
-        }
+            var result = await dependentService.GetDependentByIdAsync(id);
 
-        if (!result.Success)
+            if (result == null)
+            {
+                return Results.NotFound();
+            }
+
+            return Results.Ok(result);
+        }
+        catch (Exception ex)
         {
-            return Results.BadRequest(result);
+            return Results.BadRequest(ex.Message);
         }
-
-        return Results.Ok(result);
     }
 
     private static async Task<IResult> GetAllDependents(
@@ -65,13 +67,14 @@ public static class DependentEndpointsV1
         string? sortBy = null,
         string? sortOrder = null)
     {
-        var result = await dependentService.GetDependentsPagedAsync(page, pageSize, employeeId, relationship, sortBy, sortOrder);
-
-        if (!result.Success)
+        try
         {
-            return Results.BadRequest(result);
+            var result = await dependentService.GetDependentsPagedAsync(page, pageSize, employeeId, relationship, sortBy, sortOrder);
+            return Results.Ok(result);
         }
-
-        return Results.Ok(result);
+        catch (Exception ex)
+        {
+            return Results.BadRequest(ex.Message);
+        }
     }
 }

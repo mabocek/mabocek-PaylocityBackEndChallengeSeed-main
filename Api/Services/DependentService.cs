@@ -40,26 +40,27 @@ public class DependentService : BaseService, IDependentService
         return await _mediator.Send(new GetDependentByIdQuery(id));
     }
 
-    public async Task<ApiResponse<GetDependentDto>> GetDependentByIdAsync(int id)
+    public async Task<GetDependentDto?> GetDependentByIdAsync(int id)
     {
         // Check feature flag
         if (!await _featureManager.IsEnabledAsync(FeatureFlags.EnableDependentOperations))
         {
-            return Failure<GetDependentDto>("Dependent operations feature is currently disabled");
+            throw new InvalidOperationException("Dependent operations feature is currently disabled");
         }
 
-        return await ExecuteAsync(async () =>
+        try
         {
             var dependent = await GetByIdAsync(id);
-            if (dependent == null)
-            {
-                throw new ArgumentException($"Dependent with id {id} not found");
-            }
             return dependent;
-        }, "retrieving dependent");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error retrieving dependent {Id}", id);
+            return null;
+        }
     }
 
-    public async Task<ApiResponse<PagedResult<GetDependentDto>>> GetDependentsPagedAsync(
+    public async Task<PagedResult<GetDependentDto>> GetDependentsPagedAsync(
         int page = 1,
         int pageSize = 10,
         int? employeeId = null,
@@ -70,16 +71,21 @@ public class DependentService : BaseService, IDependentService
         // Check feature flag
         if (!await _featureManager.IsEnabledAsync(FeatureFlags.EnableDependentOperations))
         {
-            return Failure<PagedResult<GetDependentDto>>("Dependent operations feature is currently disabled");
+            throw new InvalidOperationException("Dependent operations feature is currently disabled");
         }
 
-        return await ExecuteAsync(async () =>
+        try
         {
             // Convert parameters
             var relationshipEnum = ParseEnum<Relationship>(relationship);
             var ascending = ParseSortOrder(sortOrder);
 
             return await GetPagedAsync(page, pageSize, employeeId, relationshipEnum, sortBy, ascending);
-        }, "retrieving dependents");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error retrieving paged dependents");
+            throw;
+        }
     }
 }
