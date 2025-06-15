@@ -41,8 +41,6 @@ public class PaycheckCalculationCoreBusinessLogicTests
         _service = new PaycheckCalculationService(_mockFeatureManager.Object, _mockLogger.Object, mockOptions.Object);
     }
 
-    #region Core Business Requirements Tests
-
     [Fact]
     public void CalculateGrossPayPerPaycheck_ShouldDivideBy26Paychecks()
     {
@@ -166,10 +164,6 @@ public class PaycheckCalculationCoreBusinessLogicTests
         Assert.Equal(expectedPerPaycheck, result, 2);
     }
 
-    #endregion
-
-    #region Complex Business Scenarios
-
     [Fact]
     public async Task ComplexScenario_HighSalaryEmployeeWithMultipleDependents()
     {
@@ -252,10 +246,6 @@ public class PaycheckCalculationCoreBusinessLogicTests
         Assert.Equal(1315.38m, result.PerPaycheckDeduction, 2); // 2850 * 12 / 26
     }
 
-    #endregion
-
-    #region Edge Cases and Validation
-
     [Fact]
     public void CalculateAge_ShouldCalculateCorrectly()
     {
@@ -303,6 +293,4 @@ public class PaycheckCalculationCoreBusinessLogicTests
         // Act & Assert
         Assert.Throws<ArgumentException>(() => _service.CalculatePerPaycheckDeduction(invalidCost));
     }
-
-    #endregion
 }

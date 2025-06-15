@@ -4,28 +4,14 @@ using Api.Features;
 namespace Api.Services;
 
 /// <summary>
-/// Service interface for feature flag operations
-/// </summary>
-public interface IFeatureFlagService
-{
-    Task<bool> IsFeatureEnabledAsync(string featureName);
-    Task<Dictionary<string, bool>> GetAllFeatureFlagsAsync();
-    Task<bool> IsPaycheckCalculationEnabledAsync();
-    Task<bool> AreDependentOperationsEnabledAsync();
-    Task<bool> IsHighSalaryCalculationEnabledAsync();
-    Task<bool> IsSeniorDependentSurchargeEnabledAsync();
-    Task<bool> IsDetailedPaycheckBreakdownEnabledAsync();
-}
-
-/// <summary>
 /// Service for feature flag operations
 /// </summary>
-public class FeatureFlagService : IFeatureFlagService
+public class LocalFileAspFeatureFlagService : IFeatureFlagService
 {
     private readonly IFeatureManager _featureManager;
-    private readonly ILogger<FeatureFlagService> _logger;
+    private readonly ILogger<LocalFileAspFeatureFlagService> _logger;
 
-    public FeatureFlagService(IFeatureManager featureManager, ILogger<FeatureFlagService> logger)
+    public LocalFileAspFeatureFlagService(IFeatureManager featureManager, ILogger<LocalFileAspFeatureFlagService> logger)
     {
         _featureManager = featureManager ?? throw new ArgumentNullException(nameof(featureManager));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
@@ -44,32 +30,6 @@ public class FeatureFlagService : IFeatureFlagService
             _logger.LogError(ex, "Error checking feature flag '{FeatureName}'", featureName);
             return false; // Default to disabled on error
         }
-    }
-
-    public async Task<Dictionary<string, bool>> GetAllFeatureFlagsAsync()
-    {
-        var result = new Dictionary<string, bool>();
-
-        var allFlags = new[]
-        {
-            FeatureFlags.EnablePaycheckCalculation,
-            FeatureFlags.EnableDependentOperations,
-            FeatureFlags.EnableHighSalaryCalculation,
-            FeatureFlags.EnableSeniorDependentSurcharge,
-            FeatureFlags.EnableDetailedPaycheckBreakdown,
-            FeatureFlags.EnableSwaggerUI,
-            FeatureFlags.EnableBulkOperations,
-            FeatureFlags.EnableAdvancedLogging,
-            FeatureFlags.EnableCaching,
-            FeatureFlags.EnableRateLimiting
-        };
-
-        foreach (var flag in allFlags)
-        {
-            result[flag] = await IsFeatureEnabledAsync(flag);
-        }
-
-        return result;
     }
 
     public async Task<bool> IsPaycheckCalculationEnabledAsync()

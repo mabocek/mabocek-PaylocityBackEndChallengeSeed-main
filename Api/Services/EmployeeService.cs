@@ -27,12 +27,6 @@ public class EmployeeService : BaseService, IEmployeeService
         _paycheckCalculationService = paycheckCalculationService ?? throw new ArgumentNullException(nameof(paycheckCalculationService));
     }
 
-    #region Legacy Methods (for backwards compatibility)
-
-    public async Task<List<GetEmployeeDto>> GetAllAsync()
-    {
-        return await _mediator.Send(new GetAllEmployeesQuery());
-    }
 
     public async Task<PagedResult<GetEmployeeDto>> GetPagedAsync(
         int page,
@@ -94,10 +88,6 @@ public class EmployeeService : BaseService, IEmployeeService
     {
         return await _mediator.Send(new DeleteEmployeeCommand(id));
     }
-
-    #endregion
-
-    #region New Endpoint-Friendly Methods
 
     public async Task<GetEmployeeDto?> GetEmployeeByIdAsync(int id)
     {
@@ -202,6 +192,4 @@ public class EmployeeService : BaseService, IEmployeeService
             throw;
         }
     }
-
-    #endregion
 }

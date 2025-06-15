@@ -57,7 +57,7 @@ builder.Services.AddScoped<IDependentService, DependentService>();
 builder.Services.AddScoped<IPaycheckCalculationService, PaycheckCalculationService>();
 
 // Register feature flag service
-builder.Services.AddScoped<IFeatureFlagService, FeatureFlagService>();
+builder.Services.AddScoped<IFeatureFlagService, LocalFileAspFeatureFlagService>();
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddSwaggerGen(c =>
