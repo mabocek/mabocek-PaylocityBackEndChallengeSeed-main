@@ -2,6 +2,7 @@ using Api.Dtos.Dependent;
 using Api.Models;
 using Api.Features.Dependents.Queries;
 using Api.Features;
+using Api.Constants;
 using MediatR;
 using Microsoft.FeatureManagement;
 
@@ -9,12 +10,6 @@ namespace Api.Services;
 
 public class DependentService : BaseService, IDependentService
 {
-    private const string SortByFirstName = "firstname";
-    private const string SortByLastName = "lastname";
-    private const string SortByDateOfBirth = "dateofbirth";
-    private const string SortByRelationship = "relationship";
-    private const string SortByEmployeeId = "employeeid";
-
     private readonly IMediator _mediator;
 
     public DependentService(IMediator mediator, IFeatureManager featureManager, ILogger<DependentService> logger)

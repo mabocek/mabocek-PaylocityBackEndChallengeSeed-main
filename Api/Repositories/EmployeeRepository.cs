@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Api.Data;
 using Api.Models;
+using Api.Constants;
 
 namespace Api.Repositories;
 
@@ -10,11 +11,6 @@ namespace Api.Repositories;
 /// </summary>
 public class EmployeeRepository : Repository<Employee>, IEmployeeRepository
 {
-    private const string Firstname = "firstname";
-    private const string Lastname = "lastname";
-    private const string Salary = "salary";
-    private const string Dateofbirth = "dateofbirth";
-
     public EmployeeRepository(ApplicationDbContext context, ILogger<EmployeeRepository> logger)
         : base(context, logger)
     {
@@ -99,10 +95,10 @@ public class EmployeeRepository : Repository<Employee>, IEmployeeRepository
 
         return sortBy.ToLower() switch
         {
-            Firstname => ascending ? query.OrderBy(e => e.FirstName) : query.OrderByDescending(e => e.FirstName),
-            Lastname => ascending ? query.OrderBy(e => e.LastName) : query.OrderByDescending(e => e.LastName),
-            Salary => ascending ? query.OrderBy(e => e.Salary) : query.OrderByDescending(e => e.Salary),
-            Dateofbirth => ascending ? query.OrderBy(e => e.DateOfBirth) : query.OrderByDescending(e => e.DateOfBirth),
+            SortFieldsConstants.Employee.FirstName => ascending ? query.OrderBy(e => e.FirstName) : query.OrderByDescending(e => e.FirstName),
+            SortFieldsConstants.Employee.LastName => ascending ? query.OrderBy(e => e.LastName) : query.OrderByDescending(e => e.LastName),
+            SortFieldsConstants.Employee.Salary => ascending ? query.OrderBy(e => e.Salary) : query.OrderByDescending(e => e.Salary),
+            SortFieldsConstants.Employee.DateOfBirth => ascending ? query.OrderBy(e => e.DateOfBirth) : query.OrderByDescending(e => e.DateOfBirth),
             _ => ascending ? query.OrderBy(e => e.Id) : query.OrderByDescending(e => e.Id)
         };
     }

@@ -4,8 +4,8 @@ namespace Api.Dtos.Employee;
 
 public record GetEmployeeDto(
     int Id,
-    string? FirstName,
-    string? LastName,
+    string FirstName,
+    string LastName,
     decimal Salary,
     // Based on requirements, time is not critical for this application,
     // we can use DateOnly to represent just the date part.

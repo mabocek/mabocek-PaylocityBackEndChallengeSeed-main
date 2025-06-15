@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Api.Data;
 using Api.Models;
+using Api.Constants;
 
 namespace Api.Repositories;
 
@@ -9,12 +10,6 @@ namespace Api.Repositories;
 /// </summary>
 public class DependentRepository : Repository<Dependent>, IDependentRepository
 {
-    private const string Firstname = "firstname";
-    private const string Lastname = "lastname";
-    private const string Dateofbirth = "dateofbirth";
-    private const string Relationship = "relationship";
-    private const string Employeeid = "employeeid";
-
     public DependentRepository(ApplicationDbContext context, ILogger<DependentRepository> logger)
         : base(context, logger)
     {
@@ -112,11 +107,10 @@ public class DependentRepository : Repository<Dependent>, IDependentRepository
 
         return sortBy.ToLower() switch
         {
-            Firstname => ascending ? query.OrderBy(d => d.FirstName) : query.OrderByDescending(d => d.FirstName),
-            Lastname => ascending ? query.OrderBy(d => d.LastName) : query.OrderByDescending(d => d.LastName),
-            Dateofbirth => ascending ? query.OrderBy(d => d.DateOfBirth) : query.OrderByDescending(d => d.DateOfBirth),
-            Relationship => ascending ? query.OrderBy(d => d.Relationship) : query.OrderByDescending(d => d.Relationship),
-            Employeeid => ascending ? query.OrderBy(d => d.EmployeeId) : query.OrderByDescending(d => d.EmployeeId),
+            SortFieldsConstants.Dependent.FirstName => ascending ? query.OrderBy(d => d.FirstName) : query.OrderByDescending(d => d.FirstName),
+            SortFieldsConstants.Dependent.LastName => ascending ? query.OrderBy(d => d.LastName) : query.OrderByDescending(d => d.LastName),
+            SortFieldsConstants.Dependent.DateOfBirth => ascending ? query.OrderBy(d => d.DateOfBirth) : query.OrderByDescending(d => d.DateOfBirth),
+            SortFieldsConstants.Dependent.Relationship => ascending ? query.OrderBy(d => d.Relationship) : query.OrderByDescending(d => d.Relationship),
             _ => ascending ? query.OrderBy(d => d.Id) : query.OrderByDescending(d => d.Id)
         };
     }

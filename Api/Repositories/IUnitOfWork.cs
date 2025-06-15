@@ -16,13 +16,6 @@ public interface IUnitOfWork : IDisposable
     IDependentRepository Dependents { get; }
 
     /// <summary>
-    /// Gets a generic repository for the specified entity type
-    /// </summary>
-    /// <typeparam name="T">Entity type</typeparam>
-    /// <returns>Repository instance</returns>
-    IRepository<T> Repository<T>() where T : class;
-
-    /// <summary>
     /// Begins a new database transaction
     /// </summary>
     Task BeginTransactionAsync(CancellationToken cancellationToken = default);

@@ -11,8 +11,9 @@ using Xunit;
 namespace ApiTests;
 
 /// <summary>
-/// Alternative base class for integration tests using WebApplicationFactory
-/// This approach is more robust for CI/CD environments as it doesn't require external processes
+/// Base class for integration tests using WebApplicationFactory.
+/// This approach is robust for CI/CD environments as it doesn't require external processes.
+/// All integration tests should inherit from this class.
 /// </summary>
 [Trait("Category", "Integration")]
 public abstract class IntegrationTestBase : IClassFixture<WebApplicationFactory<Program>>, IDisposable

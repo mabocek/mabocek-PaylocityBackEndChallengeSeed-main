@@ -13,7 +13,7 @@ public record GetPaycheckDto(
     /// <summary>
     /// Full name of the employee for display purposes
     /// </summary>
-    string? EmployeeName,
+    string EmployeeName,
 
     /// <summary>
     /// Employee's gross pay per paycheck (annual salary / 26 paychecks per year)

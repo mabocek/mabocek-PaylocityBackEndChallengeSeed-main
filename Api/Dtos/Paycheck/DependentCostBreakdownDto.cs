@@ -15,7 +15,7 @@ public record DependentCostBreakdownDto(
     /// <summary>
     /// Full name of the dependent for display purposes
     /// </summary>
-    string? DependentName,
+    string DependentName,
 
     /// <summary>
     /// Relationship of the dependent to the employee (Spouse, DomesticPartner, Child)

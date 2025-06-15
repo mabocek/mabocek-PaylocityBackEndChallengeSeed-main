@@ -11,58 +11,32 @@ public class UnitOfWork : IUnitOfWork
 {
     private readonly ApplicationDbContext _context;
     private readonly ILogger<UnitOfWork> _logger;
-    private readonly IServiceProvider _serviceProvider;
+    private readonly IEmployeeRepository _employees;
+    private readonly IDependentRepository _dependents;
     private IDbContextTransaction? _transaction;
     private bool _disposed = false;
-
-    // Repository cache
-    private readonly Dictionary<Type, object> _repositories = new();
-
-    // Specific repositories
-    private IEmployeeRepository? _employees;
-    private IDependentRepository? _dependents;
 
     public UnitOfWork(
         ApplicationDbContext context,
         ILogger<UnitOfWork> logger,
-        IServiceProvider serviceProvider)
+        IEmployeeRepository employeeRepository,
+        IDependentRepository dependentRepository)
     {
         _context = context ?? throw new ArgumentNullException(nameof(context));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-        _serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
+        _employees = employeeRepository ?? throw new ArgumentNullException(nameof(employeeRepository));
+        _dependents = dependentRepository ?? throw new ArgumentNullException(nameof(dependentRepository));
     }
 
     /// <summary>
     /// Gets the Employee repository
     /// </summary>
-    public IEmployeeRepository Employees =>
-        _employees ??= _serviceProvider.GetRequiredService<IEmployeeRepository>();
+    public IEmployeeRepository Employees => _employees;
 
     /// <summary>
     /// Gets the Dependent repository
     /// </summary>
-    public IDependentRepository Dependents =>
-        _dependents ??= _serviceProvider.GetRequiredService<IDependentRepository>();
-
-    /// <summary>
-    /// Gets a generic repository for the specified entity type
-    /// </summary>
-    /// <typeparam name="T">Entity type</typeparam>
-    /// <returns>Repository instance</returns>
-    public IRepository<T> Repository<T>() where T : class
-    {
-        var type = typeof(T);
-
-        if (_repositories.TryGetValue(type, out var cachedRepository))
-        {
-            return (IRepository<T>)cachedRepository;
-        }
-
-        var repository = _serviceProvider.GetRequiredService<IRepository<T>>();
-        _repositories[type] = repository;
-
-        return repository;
-    }
+    public IDependentRepository Dependents => _dependents;
 
     /// <summary>
     /// Begins a new database transaction
@@ -281,7 +255,6 @@ public class UnitOfWork : IUnitOfWork
                 _logger.LogError(ex, "Error disposing Unit of Work transaction");
             }
 
-            _repositories.Clear();
             _disposed = true;
         }
     }

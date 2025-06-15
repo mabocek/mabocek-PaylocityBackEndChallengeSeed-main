@@ -49,15 +49,12 @@ public class UnitOfWorkTests : IDisposable
         // Arrange & Act
         var employees = _unitOfWork.Employees;
         var dependents = _unitOfWork.Dependents;
-        var genericEmployeeRepo = _unitOfWork.Repository<Employee>();
 
         // Assert
         Assert.NotNull(employees);
         Assert.NotNull(dependents);
-        Assert.NotNull(genericEmployeeRepo);
         Assert.IsAssignableFrom<IEmployeeRepository>(employees);
         Assert.IsAssignableFrom<IDependentRepository>(dependents);
-        Assert.IsAssignableFrom<IRepository<Employee>>(genericEmployeeRepo);
     }
 
     [Theory]
